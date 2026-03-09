@@ -120,7 +120,7 @@ for uploaded_file in uploaded_files:
         st.error(f"❌ {uploaded_file.name} 변환 실패: {e}")
 
 # 2열 그리드로 원본 / 변환 결과 나란히 표시
-for name, jpeg_bytes, canvas, original in results:
+for i, (name, jpeg_bytes, canvas, original) in enumerate(results):
     with st.container(border=True):
         col_orig, col_thumb = st.columns(2)
 
@@ -139,7 +139,7 @@ for name, jpeg_bytes, canvas, original in results:
                 data=jpeg_bytes,
                 file_name=out_name,
                 mime="image/jpeg",
-                key=f"dl_{name}",
+                key=f"dl_{i}_{name}",
             )
 
 # ── 전체 ZIP 다운로드 ────────────────────────────────────
