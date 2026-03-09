@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 썸네일 변환 결과 뷰어</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-box.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+
+        .image-info {
+            padding: 20px;
+        }
+
+        .image-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .image-details {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .badge.original {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .badge.thumbnail {
+            background: #6bcf7f;
+            color: white;
+        }
+
+        .stats {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px 5px;
+        }
+
+        .button.small {
+            padding: 8px 18px;
+            font-size: 0.9em;
+            margin: 10px 0 0 0;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖼️ 이미지 썸네일 변환 결과 뷰어</h1>
+            <p class="subtitle">1024x1024 썸네일 변환 결과를 확인하세요</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-box" id="uploadBox">
+                <div class="upload-icon">📁</div>
+                <h2>이미지를 드래그하거나 클릭하여 업로드</h2>
+                <p style="margin-top: 10px; color: #666;">JPG, PNG, GIF, WebP, BMP 지원</p>
+                <input type="file" id="fileInput" multiple accept="image/*">
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button" onclick="loadSampleImages()">📸 샘플 이미지 로드</button>
+                <button class="button" onclick="clearGallery()">🗑️ 갤러리 초기화</button>
+            </div>
+            <div id="uploadStatus" style="text-align: center; margin-top: 10px; color: #666;">
+                아직 업로드된 이미지가 없습니다.
+            </div>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-number" id="totalImages">0</div>
+                <div class="stat-label">총 이미지</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalSize">0 MB</div>
+                <div class="stat-label">총 용량</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="avgSize">0 KB</div>
+                <div class="stat-label">평균 크기</div>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <div class="empty-state">
+                <div class="empty-icon">🎨</div>
+                <p>이미지를 업로드하여 미리보기를 시작하세요</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let imageCount = 0;
+        let totalBytes = 0;
+
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const gallery = document.getElementById('gallery');
+        const stats = document.getElementById('stats');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        const TARGET_SIZE = 1024;
+
+        // 클릭 업로드
+        uploadBox.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 파일 선택
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // 드래그 앤 드롭
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+
+            if (imageCount === 0) {
+                gallery.innerHTML = '';
+            }
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    displayImage(file);
+                }
+            });
+        }
+
+        function displayImage(file) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+
+                img.onload = () => {
+                    imageCount++;
+                    totalBytes += file.size;
+
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+
+                    const badge = file.name.includes('_thumbnail') ? 
+                        '<span class="badge thumbnail">썸네일 (1024x1024)</span>' : 
+                        '<span class="badge original">원본</span>';
+
+                    card.innerHTML = `
+                        <div class="image-wrapper">
+                            <img src="${e.target.result}" alt="${file.name}">
+                        </div>
+                        <div class="image-info">
+                            <div class="image-name">${file.name}</div>
+                            <div class="image-details">
+                                <div class="detail-row">
+                                    <span>원본 크기:</span>
+                                    <span><strong>${img.width} x ${img.height}</strong></span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>파일 크기:</span>
+                                    <span><strong>${formatBytes(file.size)}</strong></span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>형식:</span>
+                                    <span><strong>${file.type.split('/')[1].toUpperCase()}</strong></span>
+                                </div>
+                            </div>
+                            ${badge}
+                            <button class="button small convert-btn">1024x1024로 변환 & 다운로드</button>
+                        </div>
+                    `;
+
+                    gallery.appendChild(card);
+                    const convertBtn = card.querySelector('.convert-btn');
+                    if (convertBtn) {
+                        convertBtn.addEventListener('click', () => {
+                            convertAndDownload(e.target.result, file.name);
+                        });
+                    }
+                    updateStats();
+                };
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function updateStats() {
+            stats.style.display = imageCount > 0 ? 'grid' : 'none';
+            document.getElementById('totalImages').textContent = imageCount;
+            document.getElementById('totalSize').textContent = (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
+            document.getElementById('avgSize').textContent = (totalBytes / imageCount / 1024).toFixed(2) + ' KB';
+            if (uploadStatus) {
+                uploadStatus.textContent =
+                    imageCount === 0
+                        ? '아직 업로드된 이미지가 없습니다.'
+                        : `총 ${imageCount}개의 이미지가 업로드되었습니다.`;
+            }
+        }
+
+        function convertAndDownload(dataUrl, originalName) {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = TARGET_SIZE;
+                canvas.height = TARGET_SIZE;
+                const ctx = canvas.getContext('2d');
+
+                // 흰색 배경
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
+
+                // 비율 유지하며 리사이즈
+                const ratio = Math.min(TARGET_SIZE / img.width, TARGET_SIZE / img.height);
+                const newWidth = img.width * ratio;
+                const newHeight = img.height * ratio;
+                const offsetX = (TARGET_SIZE - newWidth) / 2;
+                const offsetY = (TARGET_SIZE - newHeight) / 2;
+
+                ctx.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) return;
+                    const link = document.createElement('a');
+                    const baseName = originalName.replace(/\.[^/.]+$/, '');
+                    link.download = baseName + '_thumbnail_1024.jpg';
+                    link.href = URL.createObjectURL(blob);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                }, 'image/jpeg', 0.95);
+            };
+            img.src = dataUrl;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function clearGallery() {
+            if (confirm('갤러리를 초기화하시겠습니까?')) {
+                gallery.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎨</div>
+                        <p>이미지를 업로드하여 미리보기를 시작하세요</p>
+                    </div>
+                `;
+                imageCount = 0;
+                totalBytes = 0;
+                updateStats();
+                fileInput.value = '';
+            }
+        }
+
+        function loadSampleImages() {
+            alert('샘플 이미지를 로드하려면:\n\n1. Python 스크립트를 실행하여 테스트 이미지를 생성하세요\n2. 생성된 원본 이미지와 썸네일을 이 뷰어에 드래그하여 비교하세요');
+        }
+    </script>
+</body>
+</html>

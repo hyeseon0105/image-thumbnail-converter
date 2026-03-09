@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 가상환경
+venv/
+.venv/
+env/
+.env/
+
+# VSCode / Cursor 등 편집기 설정
+.vscode/
+.idea/
+
+# OS별 임시 파일
+.DS_Store
+Thumbs.db
+
+# 로그 / 캐시
+*.log
+.pytest_cache/
+
+# 생성된 테스트 이미지 및 썸네일
+test_images/
+test_images/thumbnails/
+thumbnails/
+
