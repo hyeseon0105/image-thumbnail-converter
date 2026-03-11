@@ -137,6 +137,33 @@ python image_thumbnail_converter.py -i ./images -s 512 512
 - 출력 디렉토리가 없으면 자동으로 생성됩니다
 - 동일한 이름의 파일이 있으면 덮어씁니다
 
+## Streamlit 웹 앱 사용법
+
+이 프로젝트에는 브라우저에서 바로 썸네일을 확인할 수 있는 `streamlit_app.py`도 포함되어 있습니다.
+
+### 실행 방법
+
+```bash
+py -m pip install -r requirements.txt
+py -m streamlit run streamlit_app.py
+```
+
+또는 `python` 명령을 사용하는 환경이라면:
+
+```bash
+python -m pip install -r requirements.txt
+python -m streamlit run streamlit_app.py
+```
+
+### 주요 기능 (웹 버전)
+
+- 웹에서 이미지 여러 장 업로드 후 즉시 변환
+- 사이드바에서 캔버스 크기, 패딩(px), JPEG 품질 실시간 조절
+- 원본 / 변환 이미지를 나란히 비교
+- 각 이미지별 썸네일 다운로드
+- 여러 장을 한 번에 ZIP으로 다운로드
+
+
 ## 문제 해결
 
 **Pillow 설치 오류:**

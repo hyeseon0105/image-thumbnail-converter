@@ -9,6 +9,8 @@ from PIL import Image, ImageOps
 
 TARGET_SIZE = (1024, 1024)
 DEFAULT_PADDING = 130
+MAX_FILES = 50
+PREVIEW_LIMIT = 10
 
 
 def crop_margins(img, threshold=30):
@@ -96,13 +98,17 @@ size = (int(canvas_w), int(canvas_h))
 
 # ── 파일 업로드 ───────────────────────────────────────────
 uploaded_files = st.file_uploader(
-    "이미지 파일을 업로드하세요 (여러 장 가능)",
+    f"이미지 파일을 업로드하세요 (최대 {MAX_FILES}개)",
     type=["jpg", "jpeg", "png", "bmp", "gif", "webp", "tiff", "tif"],
     accept_multiple_files=True,
 )
 
 if not uploaded_files:
     st.info("이미지를 업로드하면 변환 결과를 바로 미리볼 수 있습니다.")
+    st.stop()
+
+if len(uploaded_files) > MAX_FILES:
+    st.error(f"이미지는 최대 {MAX_FILES}개까지 업로드 가능합니다.")
     st.stop()
 
 # ── 변환 및 미리보기 ──────────────────────────────────────
@@ -119,19 +125,22 @@ for uploaded_file in uploaded_files:
     except Exception as e:
         st.error(f"❌ {uploaded_file.name} 변환 실패: {e}")
 
-# 2열 그리드로 원본 / 변환 결과 나란히 표시
+# 2열 그리드로 원본 / 변환 결과 나란히 표시 (최대 PREVIEW_LIMIT개)
 for i, (name, jpeg_bytes, canvas, original) in enumerate(results):
+    if i >= PREVIEW_LIMIT:
+        st.info("미리보기는 처음 10개까지만 표시됩니다.")
+        break
     with st.container(border=True):
         col_orig, col_thumb = st.columns(2)
 
         with col_orig:
             st.caption("원본")
-            st.image(original, use_container_width=True)
+            st.image(original, width="stretch")
             st.markdown(f"`{original.width} × {original.height}` px")
 
         with col_thumb:
             st.caption(f"변환 결과 ({size[0]}×{size[1]}, 패딩 {padding}px)")
-            st.image(canvas, use_container_width=True)
+            st.image(canvas, width="stretch")
             stem = name.rsplit('.', 1)[0]
             out_name = stem + '_thumbnail.jpg'
             st.download_button(
