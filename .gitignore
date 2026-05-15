@@ -25,3 +25,6 @@ test_images/
 test_images/thumbnails/
 thumbnails/
 
+# 상세페이지 생성기 로컬 프로젝트
+detail_projects/
+

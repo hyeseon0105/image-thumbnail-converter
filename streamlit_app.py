@@ -4,9 +4,12 @@
 - 선택적으로 rembg를 이용한 배경 제거(누끼) 기능 지원
 """
 
+import importlib.util
 import io
 import time
 import zipfile
+from pathlib import Path
+
 import streamlit as st
 from PIL import Image, ImageOps
 
@@ -176,6 +179,21 @@ st.set_page_config(
     layout="wide",
 )
 
+if st.query_params.get("page") == "detail":
+    detail_page_path = Path(__file__).parent / "pages" / "01_detail_page_generator.py"
+    spec = importlib.util.spec_from_file_location("detail_page_generator", detail_page_path)
+    if spec is None or spec.loader is None:
+        st.error("상세페이지 생성기를 불러올 수 없습니다.")
+        st.stop()
+
+    detail_page = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(detail_page)
+    st.stop()
+
+with st.sidebar:
+    st.markdown("[🧾 상세페이지 생성기 열기](/?page=detail)")
+    st.divider()
+
 st.title("🖼️ 이미지 썸네일 변환기")
 st.caption("이미지를 1024×1024 썸네일로 변환합니다. 흰색 여백 자동 제거 또는 누끼(배경 제거)를 선택할 수 있습니다.")
 
@@ -305,7 +323,7 @@ if not uploaded_files:
 
 if len(uploaded_files) > MAX_FILES:
     st.error(f"이미지는 최대 {MAX_FILES}개까지 업로드 가능합니다.")
-    st.stop()
+    st.stop() 
 
 # ── 변환 및 미리보기 ──────────────────────────────────────
 st.divider()
