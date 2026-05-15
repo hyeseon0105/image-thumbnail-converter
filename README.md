@@ -8,6 +8,7 @@
 - 📐 원본 비율 유지하면서 1024x1024(또는 지정 크기)로 변환
 - 🎨 흰색 배경에 이미지 중앙 배치
 - 🧱 이미지와 캔버스 가장자리 사이 최소 130px 여백(기본값, 변경 가능)
+- ✂️ 선택적 배경 제거(누끼) — rembg(U²-Net) 기반, 투명 PNG 출력 지원
 - 🚀 디렉토리 내 모든 이미지 일괄 처리
 - ⚙️ 커스터마이징 가능한 크기, 품질, 패딩 설정
 
@@ -66,6 +67,21 @@ python image_thumbnail_converter.py -q 85
 python image_thumbnail_converter.py -p 100
 ```
 
+**배경 제거(누끼) — 흰 캔버스 JPEG로 저장:**
+```bash
+python image_thumbnail_converter.py -i ./images --remove-bg
+```
+
+**배경 제거(누끼) — 투명 PNG로 저장:**
+```bash
+python image_thumbnail_converter.py -i ./images --remove-bg -f png
+```
+
+**rembg 모델 변경 (예: 고품질 isnet-general-use):**
+```bash
+python image_thumbnail_converter.py -i ./images --remove-bg --model isnet-general-use
+```
+
 **모든 옵션 조합:**
 ```bash
 python image_thumbnail_converter.py -i ./images -o ./output -s 800 800 -q 90 -p 130
@@ -80,6 +96,9 @@ python image_thumbnail_converter.py -i ./images -o ./output -s 800 800 -q 90 -p 
 | `-s, --size` | 썸네일 크기 (너비 높이) | 1024 1024 |
 | `-q, --quality` | JPEG 품질 (1-100) | 95 |
 | `-p, --padding` | 이미지와 캔버스 가장자리 사이 최소 여백(px) | 130 |
+| `--remove-bg` | rembg로 배경 제거(누끼) 수행 | OFF |
+| `-f, --format` | 출력 형식 (`jpeg` 또는 `png`) | jpeg |
+| `--model` | rembg 모델 (`u2net`, `u2netp`, `isnet-general-use`, `silueta` 등) | u2net |
 
 ## 도움말 보기
 
@@ -158,10 +177,14 @@ python -m streamlit run streamlit_app.py
 ### 주요 기능 (웹 버전)
 
 - 웹에서 이미지 여러 장 업로드 후 즉시 변환
-- 사이드바에서 캔버스 크기, 패딩(px), JPEG 품질 실시간 조절
+- 사이드바에서 웹용(px) / 인쇄용(mm·cm + DPI) 해상도 프리셋 선택
+- 패딩(px), JPEG 품질 실시간 조절
+- **배경 제거(누끼) 토글** — rembg 모델 선택 및 투명 PNG / 흰 배경 JPEG 출력 선택
 - 원본 / 변환 이미지를 나란히 비교
 - 각 이미지별 썸네일 다운로드
 - 여러 장을 한 번에 ZIP으로 다운로드
+
+> 처음 누끼 기능을 사용할 때 rembg가 모델 파일(약 100~170MB)을 자동으로 내려받습니다. CPU 환경에서는 이미지당 수 초가 걸릴 수 있습니다.
 
 
 ## 문제 해결
