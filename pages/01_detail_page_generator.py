@@ -38,6 +38,21 @@ CHECKPOINT_SECTION_OPTIONS = {
     "신뢰성": "trust",
 }
 
+CHECK_ICON_OPTIONS: dict[str, tuple[str, str]] = {
+    "check": ("체크", "✓"),
+    "circle_filled": ("동그라미", "●"),
+    "circle_empty": ("빈 동그라미", "○"),
+    "circle_double": ("이중 동그라미", "◎"),
+    "triangle_filled": ("세모", "▲"),
+    "triangle_empty": ("빈 세모", "△"),
+    "square_filled": ("네모", "■"),
+    "square_empty": ("빈 네모", "□"),
+    "diamond": ("마름모", "◆"),
+    "star": ("별", "★"),
+    "heart": ("하트", "♥"),
+    "arrow": ("화살표", "▶"),
+}
+
 FIXED_SECTION_KEYS = ("points", "features", "examples", "trust", "specs")
 
 PROJECT_SCHEMA_VERSION = 1
@@ -193,7 +208,10 @@ DETAIL_PAGE_DEFAULTS: dict[str, object] = {
     "detail_body_px": 18,
     "detail_checkpoint_sections": ["제품포인트", "신뢰성"],
     "detail_show_check_icon": True,
+    "detail_check_icon_shape": "check",
     "detail_check_icon_color": "#2563eb",
+    "detail_check_icon_size": 18,
+    "detail_check_icon_y_offset": -8,
 }
 
 
@@ -269,6 +287,10 @@ def section_order_label(item_id: str, section_settings: dict[str, dict]) -> str:
 def safe_text(value: str) -> str:
     """Escape text and preserve line breaks for HTML preview."""
     return html.escape(value).replace("\n", "<br>")
+
+
+def css_string_attr(value: str) -> str:
+    return html.escape(json.dumps(value, ensure_ascii=False), quote=True)
 
 
 def render_list_items(value: str) -> str:
@@ -438,7 +460,10 @@ def collect_project_state() -> dict:
         "detail_body_px",
         "detail_checkpoint_sections",
         "detail_show_check_icon",
+        "detail_check_icon_shape",
         "detail_check_icon_color",
+        "detail_check_icon_size",
+        "detail_check_icon_y_offset",
         "extra_section_ids",
         "section_order",
         "section_order_version",
@@ -946,19 +971,17 @@ body {
     font-weight: 700;
 }
 #detail-preview-root .section-body li::before {
-    content: "✓";
+    content: var(--check-icon-content, "✓");
     position: absolute;
     left: 18px;
-    top: 50%;
+    top: calc(16px + (var(--fs-body, 18px) * 1.85 / 2) + var(--check-icon-y-offset, -8px));
     transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
+    width: var(--check-icon-size, 18px);
+    height: var(--check-icon-size, 18px);
     display: grid;
     place-items: center;
-    border-radius: 999px;
-    background: var(--check-icon-bg, #2563eb);
-    color: #ffffff;
-    font-size: 13px;
+    color: var(--check-icon-color, #2563eb);
+    font-size: var(--check-icon-size, 18px);
     font-weight: 900;
 }
 #detail-preview-root.hide-check-icon .section-body li {
@@ -1252,19 +1275,17 @@ markdown_html(
         font-weight: 700;
     }
     #detail-preview-root .section-body li::before {
-        content: "✓";
+        content: var(--check-icon-content, "✓");
         position: absolute;
         left: 18px;
-        top: 50%;
+        top: calc(16px + (var(--fs-body, 18px) * 1.85 / 2) + var(--check-icon-y-offset, -8px));
         transform: translateY(-50%);
-        width: 22px;
-        height: 22px;
+        width: var(--check-icon-size, 18px);
+        height: var(--check-icon-size, 18px);
         display: grid;
         place-items: center;
-        border-radius: 999px;
-        background: var(--check-icon-bg, #2563eb);
-        color: #ffffff;
-        font-size: 13px;
+        color: var(--check-icon-color, #2563eb);
+        font-size: var(--check-icon-size, 18px);
         font-weight: 900;
     }
     #detail-preview-root.hide-check-icon .section-body li {
@@ -1508,16 +1529,40 @@ with st.sidebar:
         key="detail_body_px",
     )
     checkpoint_section_labels = st.multiselect(
-        "체크포인트 적용 구역",
+        "아이콘 적용 구역",
         options=list(CHECKPOINT_SECTION_OPTIONS.keys()),
         help="선택한 구역은 줄 단위 체크 리스트로 표시됩니다.",
         key="detail_checkpoint_sections",
     )
-    show_check_icon = st.toggle("체크표시 표시", key="detail_show_check_icon")
+    show_check_icon = st.toggle("아이콘 표시", key="detail_show_check_icon")
+    check_icon_shape = st.selectbox(
+        "아이콘 모양",
+        options=list(CHECK_ICON_OPTIONS.keys()),
+        format_func=lambda key: f"{CHECK_ICON_OPTIONS[key][1]} {CHECK_ICON_OPTIONS[key][0]}",
+        disabled=not show_check_icon,
+        key="detail_check_icon_shape",
+    )
     check_icon_color = st.color_picker(
-        "체크표시 색상",
+        "아이콘 색상",
         disabled=not show_check_icon,
         key="detail_check_icon_color",
+    )
+    check_icon_size = st.slider(
+        "아이콘 크기 (px)",
+        min_value=10,
+        max_value=36,
+        step=1,
+        disabled=not show_check_icon,
+        key="detail_check_icon_size",
+    )
+    check_icon_y_offset = st.slider(
+        "아이콘 위아래 위치 (px)",
+        min_value=-20,
+        max_value=20,
+        step=1,
+        help="음수는 위로, 양수는 아래로 이동합니다.",
+        disabled=not show_check_icon,
+        key="detail_check_icon_y_offset",
     )
 
     st.divider()
@@ -1729,12 +1774,20 @@ font_size_style = (
     f"--hero-image-height:{hero_image_height}px;"
     f"--hero-image-fit:{hero_image_fit};"
 )
+check_icon_symbol = CHECK_ICON_OPTIONS.get(
+    check_icon_shape,
+    CHECK_ICON_OPTIONS["check"],
+)[1]
+check_icon_content = css_string_attr(check_icon_symbol)
 
 hero_lines = [
     (
         f'<div id="detail-preview-root" class="preview-shell'
         f'{" hide-check-icon" if not show_check_icon else ""}" '
-        f'style="background:{page_bg_color};--check-icon-bg:{check_icon_color};'
+        f'style="background:{page_bg_color};--check-icon-color:{check_icon_color};'
+        f"--check-icon-content:{check_icon_content};"
+        f"--check-icon-size:{check_icon_size}px;"
+        f"--check-icon-y-offset:{check_icon_y_offset}px;"
         f"--detail-font:{font_stack_attr};--title-font:{title_font_stack_attr};"
         f"{font_size_style}\">"
     ),
