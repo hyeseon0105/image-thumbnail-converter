@@ -1081,6 +1081,65 @@ def build_standalone_html(
     ).strip()
 
 
+_CHROMIUM_READY = False
+
+
+def _chromium_launch_probe() -> bool:
+    """설치된 Chromium으로 짧은 실행 테스트를 합니다."""
+    try:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            browser.close()
+        return True
+    except Exception:
+        return False
+
+
+def _mark_chromium_ready() -> None:
+    global _CHROMIUM_READY
+    _CHROMIUM_READY = True
+    try:
+        st.session_state["_playwright_chromium_ready"] = True
+    except Exception:
+        pass
+
+
+def ensure_playwright_chromium_installed() -> None:
+    """배포 환경(Streamlit Cloud 등)에서 Chromium 바이너리가 없으면 자동 설치합니다."""
+    global _CHROMIUM_READY
+    if _CHROMIUM_READY or st.session_state.get("_playwright_chromium_ready"):
+        _CHROMIUM_READY = True
+        return
+    if _chromium_launch_probe():
+        _mark_chromium_ready()
+        return
+
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium"],
+        capture_output=True,
+        text=True,
+        timeout=600,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(
+            "Chromium 자동 설치에 실패했습니다. "
+            f"서버에서 `python -m playwright install chromium` 실행이 필요합니다. {detail}"
+        )
+    if not _chromium_launch_probe():
+        raise RuntimeError(
+            "Chromium 설치 후에도 브라우저를 시작할 수 없습니다. "
+            "배포 환경에 `packages.txt`가 포함되어 있는지 확인해 주세요."
+        )
+    _mark_chromium_ready()
+
+
 def _capture_full_page_png_impl(html_document: str, viewport_width: int, scale_factor: int) -> bytes:
     """Playwright 동기 API로 HTML을 PNG로 캡처합니다. (asyncio 루프 밖에서 호출)"""
     from playwright.sync_api import sync_playwright
@@ -1134,7 +1193,7 @@ def capture_full_page_png(html_document: str, viewport_width: int, scale_factor:
         return _run_capture()
 
     with ThreadPoolExecutor(max_workers=1) as executor:
-        return executor.submit(_run_capture).result(timeout=180)
+        return executor.submit(_run_capture).result(timeout=900)
 
 
 if __name__ == "__main__":
@@ -1864,21 +1923,24 @@ with st.expander("상세페이지 다운로드", expanded=True):
         )
 
     if st.button("PNG 생성", type="primary", use_container_width=True):
-        with st.spinner("Playwright로 전체 상세페이지를 캡처하는 중입니다..."):
-            try:
+        try:
+            if not st.session_state.get("_playwright_chromium_ready"):
+                with st.spinner("Chromium 브라우저 설치 중입니다. 최초 1회는 1~3분 걸릴 수 있습니다..."):
+                    ensure_playwright_chromium_installed()
+            with st.spinner("Playwright로 전체 상세페이지를 캡처하는 중입니다..."):
                 png_bytes = capture_full_page_png(
                     standalone_html,
                     viewport_width=int(capture_width),
                     scale_factor=int(capture_scale),
                 )
-            except RuntimeError as exc:
-                st.error(str(exc))
-                if exc.__cause__:
-                    st.caption(f"상세: {exc.__cause__}")
-            else:
-                st.session_state.detail_page_png = png_bytes
-                st.session_state.detail_page_png_digest = html_digest
-                st.success("PNG 생성이 완료되었습니다.")
+        except RuntimeError as exc:
+            st.error(str(exc))
+            if exc.__cause__:
+                st.caption(f"상세: {exc.__cause__}")
+        else:
+            st.session_state.detail_page_png = png_bytes
+            st.session_state.detail_page_png_digest = html_digest
+            st.success("PNG 생성이 완료되었습니다.")
 
     png_bytes = st.session_state.get("detail_page_png")
     png_digest = st.session_state.get("detail_page_png_digest")

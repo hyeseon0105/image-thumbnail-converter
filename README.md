@@ -156,6 +156,15 @@ python image_thumbnail_converter.py -i ./images -s 512 512
 - 출력 디렉토리가 없으면 자동으로 생성됩니다
 - 동일한 이름의 파일이 있으면 덮어씁니다
 
+## Streamlit Cloud 배포 (PNG 기능)
+
+PNG 다운로드는 서버에 **Playwright용 Chromium**이 필요합니다. 이 저장소에는 Linux 배포용 설정이 포함되어 있습니다.
+
+- `packages.txt` — Chromium 실행에 필요한 시스템 라이브러리 (Streamlit Cloud가 빌드 시 설치)
+- 상세페이지에서 **PNG 생성**을 처음 누를 때 Chromium이 없으면 자동으로 `playwright install chromium`을 실행합니다 (최초 1회, 1~3분 소요).
+
+배포 후에도 PNG 오류가 나면 앱을 **재배포(Reboot)** 한 뒤 PNG 생성을 다시 시도하세요. `packages.txt`를 추가·수정한 경우 반드시 재배포가 필요합니다.
+
 ## Streamlit 웹 앱 사용법
 
 이 프로젝트에는 브라우저에서 바로 썸네일을 확인할 수 있는 `streamlit_app.py`도 포함되어 있습니다.
