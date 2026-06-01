@@ -1081,12 +1081,9 @@ def build_standalone_html(
     ).strip()
 
 
-def capture_full_page_png(html_document: str, viewport_width: int, scale_factor: int) -> bytes:
-    """임시 HTML 파일을 Playwright로 열고 전체 페이지 PNG를 캡처합니다."""
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError as exc:
-        raise RuntimeError("playwright가 설치되어 있지 않습니다. `pip install playwright` 후 `python -m playwright install chromium`을 실행하세요.") from exc
+def _capture_full_page_png_impl(html_document: str, viewport_width: int, scale_factor: int) -> bytes:
+    """Playwright 동기 API로 HTML을 PNG로 캡처합니다. (asyncio 루프 밖에서 호출)"""
+    from playwright.sync_api import sync_playwright
 
     temp_path: Path | None = None
     try:
@@ -1100,17 +1097,44 @@ def capture_full_page_png(html_document: str, viewport_width: int, scale_factor:
                 viewport={"width": viewport_width, "height": 900},
                 device_scale_factor=scale_factor,
             )
-            page.goto(temp_path.as_uri(), wait_until="networkidle")
+            page.goto(temp_path.as_uri(), wait_until="load", timeout=60_000)
             png_bytes = page.screenshot(type="png", full_page=True)
             browser.close()
             return png_bytes
-    except Exception as exc:
-        raise RuntimeError(
-            "PNG 생성에 실패했습니다. Chromium 브라우저가 없으면 `python -m playwright install chromium`을 실행하세요."
-        ) from exc
     finally:
         if temp_path and temp_path.exists():
             temp_path.unlink(missing_ok=True)
+
+
+def capture_full_page_png(html_document: str, viewport_width: int, scale_factor: int) -> bytes:
+    """임시 HTML 파일을 Playwright로 열고 전체 페이지 PNG를 캡처합니다."""
+    try:
+        import playwright  # noqa: F401
+    except ImportError as exc:
+        raise RuntimeError(
+            "playwright가 설치되어 있지 않습니다. `pip install playwright` 후 "
+            "`python -m playwright install chromium`을 실행하세요."
+        ) from exc
+
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _run_capture() -> bytes:
+        try:
+            return _capture_full_page_png_impl(html_document, viewport_width, scale_factor)
+        except Exception as exc:
+            raise RuntimeError(
+                f"PNG 생성에 실패했습니다. ({type(exc).__name__}: {exc}) "
+                "Chromium이 없다면 `python -m playwright install chromium`을 실행하세요."
+            ) from exc
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return _run_capture()
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(_run_capture).result(timeout=180)
 
 
 if __name__ == "__main__":
@@ -1849,6 +1873,8 @@ with st.expander("상세페이지 다운로드", expanded=True):
                 )
             except RuntimeError as exc:
                 st.error(str(exc))
+                if exc.__cause__:
+                    st.caption(f"상세: {exc.__cause__}")
             else:
                 st.session_state.detail_page_png = png_bytes
                 st.session_state.detail_page_png_digest = html_digest
