@@ -160,7 +160,7 @@ python image_thumbnail_converter.py -i ./images -s 512 512
 
 PNG 다운로드는 서버에 **Playwright용 Chromium**이 필요합니다. 이 저장소에는 Linux 배포용 설정이 포함되어 있습니다.
 
-- `packages.txt` — Chromium 실행에 필요한 시스템 라이브러리 (Streamlit Cloud가 빌드 시 설치)
+- `packages.txt` — Chromium 실행에 필요한 시스템 라이브러리와 한글 폰트 (Streamlit Cloud가 빌드 시 설치)
 - 상세페이지에서 **PNG 생성**을 처음 누를 때 Chromium이 없으면 자동으로 `playwright install chromium`을 실행합니다 (최초 1회, 1~3분 소요).
 
 배포 후에도 PNG 오류가 나면 앱을 **재배포(Reboot)** 한 뒤 PNG 생성을 다시 시도하세요. `packages.txt`를 추가·수정한 경우 반드시 재배포가 필요합니다.

@@ -93,89 +93,92 @@ DEFAULT_CONTENT = {
     "specs": "크기: 120 x 80 x 35 mm\n무게: 240 g\n색상: 화이트 / 블랙\n구성품: 본품, 설명서, 패키지",
 }
 
+KOREAN_SANS_FALLBACK = "Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif"
+KOREAN_SERIF_FALLBACK = "Batang, 'Noto Serif CJK KR', 'Nanum Myeongjo', serif"
+
 DETAIL_FONT_PRESETS: list[tuple[str, str, str | None]] = [
-    ("맑은 고딕 · 시스템", "Malgun Gothic, Apple SD Gothic Neo, sans-serif", None),
+    ("맑은 고딕 · 시스템", KOREAN_SANS_FALLBACK, None),
     (
         "Noto Sans KR",
-        "'Noto Sans KR', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Noto Sans KR', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
     ),
     (
         "나눔고딕",
-        "'Nanum Gothic', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Nanum Gothic', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap",
     ),
     (
         "나눔명조",
-        "'Nanum Myeongjo', Batang, serif",
+        f"'Nanum Myeongjo', {KOREAN_SERIF_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap",
     ),
     (
         "Pretendard",
-        "'Pretendard', -apple-system, Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Pretendard', -apple-system, {KOREAN_SANS_FALLBACK}",
         "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
     ),
     (
         "IBM Plex Sans KR",
-        "'IBM Plex Sans KR', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'IBM Plex Sans KR', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap",
     ),
     (
         "Gowun Dodum",
-        "'Gowun Dodum', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Gowun Dodum', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap",
     ),
     (
         "Gowun Batang",
-        "'Gowun Batang', Batang, serif",
+        f"'Gowun Batang', {KOREAN_SERIF_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap",
     ),
     (
         "Hahmlet",
-        "'Hahmlet', Malgun Gothic, Apple SD Gothic Neo, serif",
+        f"'Hahmlet', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;500;600;700;800&display=swap",
     ),
     (
         "Do Hyeon",
-        "'Do Hyeon', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Do Hyeon', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap",
     ),
     (
         "Jua",
-        "'Jua', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Jua', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Jua&display=swap",
     ),
     (
         "Black Han Sans",
-        "'Black Han Sans', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Black Han Sans', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap",
     ),
     (
         "Song Myung",
-        "'Song Myung', Batang, serif",
+        f"'Song Myung', {KOREAN_SERIF_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Song+Myung&display=swap",
     ),
     (
         "Gaegu",
-        "'Gaegu', Malgun Gothic, Apple SD Gothic Neo, cursive",
+        f"'Gaegu', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap",
     ),
     (
         "Dongle",
-        "'Dongle', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Dongle', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap",
     ),
     (
         "Gugi",
-        "'Gugi', Malgun Gothic, Apple SD Gothic Neo, sans-serif",
+        f"'Gugi', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Gugi&display=swap",
     ),
     (
         "Poor Story",
-        "'Poor Story', Malgun Gothic, Apple SD Gothic Neo, cursive",
+        f"'Poor Story', {KOREAN_SANS_FALLBACK}",
         "https://fonts.googleapis.com/css2?family=Poor+Story&display=swap",
     ),
-    ("고정폭 · 코드 느낌", "Consolas, 'D2Coding', 'Malgun Gothic', monospace", None),
+    ("고정폭 · 코드 느낌", f"Consolas, 'D2Coding', {KOREAN_SANS_FALLBACK}, monospace", None),
 ]
 
 FONT_PRESET_LABELS = [label for label, _, _ in DETAIL_FONT_PRESETS]
@@ -828,12 +831,12 @@ body {
     margin: 0;
     padding: 0;
     background: #ffffff;
-    font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif);
+    font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif);
 }
 #detail-preview-root {
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
-    font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif);
+    font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif);
 }
 #detail-preview-root *,
 #detail-preview-root *::before,
@@ -886,14 +889,14 @@ body {
     line-height: 1.08;
     letter-spacing: -0.06em;
     font-weight: 900;
-    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
 }
 #detail-preview-root .hero-subtitle {
     margin: 18px 0 30px;
     max-width: 680px;
     font-size: var(--fs-subtitle, 20px);
     line-height: 1.7;
-    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
 }
 #detail-preview-root .hero-image-wrap {
     display: flex;
@@ -945,7 +948,7 @@ body {
     font-size: var(--fs-section-title, 30px);
     line-height: 1.25;
     letter-spacing: -0.035em;
-    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
 }
 #detail-preview-root .section-body,
 #detail-preview-root .spec-table {
@@ -1030,7 +1033,7 @@ body {
     color: #334155;
     background: rgba(248, 250, 252, 0.88);
     font-weight: 900;
-    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+    font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
 }
 #detail-preview-root .empty-text {
     color: #94a3b8;
@@ -1209,7 +1212,7 @@ markdown_html(
     #detail-preview-root {
         box-sizing: border-box;
         -webkit-font-smoothing: antialiased;
-        font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif);
+        font-family: var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif);
     }
     #detail-preview-root *,
     #detail-preview-root *::before,
@@ -1272,7 +1275,7 @@ markdown_html(
         line-height: 1.08;
         letter-spacing: -0.06em;
         font-weight: 900;
-        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
     }
     #detail-preview-root .hero-subtitle {
         margin: 18px 0 30px;
@@ -1280,7 +1283,7 @@ markdown_html(
         font-size: var(--fs-subtitle, 20px);
         line-height: 1.7;
         color: rgba(15, 23, 42, 0.72);
-        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
     }
     #detail-preview-root .hero-image-wrap {
         display: flex;
@@ -1332,7 +1335,7 @@ markdown_html(
         font-size: var(--fs-section-title, 30px);
         line-height: 1.25;
         letter-spacing: -0.035em;
-        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
     }
     #detail-preview-root .section-body,
     #detail-preview-root .spec-table {
@@ -1417,7 +1420,7 @@ markdown_html(
         color: #334155;
         background: rgba(248, 250, 252, 0.88);
         font-weight: 900;
-        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, sans-serif));
+        font-family: var(--title-font, var(--detail-font, Malgun Gothic, Apple SD Gothic Neo, 'Noto Sans CJK KR', 'Nanum Gothic', sans-serif));
     }
     #detail-preview-root .empty-text {
         color: #94a3b8;

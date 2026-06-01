@@ -18,3 +18,5 @@ libx11-6
 libxext6
 libxcb1
 fonts-liberation
+fonts-noto-cjk
+fonts-nanum
